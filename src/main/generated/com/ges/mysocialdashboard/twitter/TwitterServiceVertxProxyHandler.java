@@ -39,10 +39,9 @@ import io.vertx.serviceproxy.ProxyHelper;
 import io.vertx.serviceproxy.ProxyHandler;
 import io.vertx.serviceproxy.ServiceException;
 import io.vertx.serviceproxy.ServiceExceptionMessageCodec;
-import java.util.List;
 import com.ges.mysocialdashboard.twitter.TwitterService;
-import com.ges.mysocialdashboard.twitter.Trend;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
@@ -124,21 +123,7 @@ public class TwitterServiceVertxProxyHandler extends ProxyHandler {
       accessed();
       switch (action) {
         case "getTrends": {
-          service.getTrends(res -> {
-            if (res.failed()) {
-              if (res.cause() instanceof ServiceException) {
-                msg.reply(res.cause());
-              } else {
-                msg.reply(new ServiceException(-1, res.cause().getMessage()));
-              }
-            } else {
-              msg.reply(new JsonArray(res.result().stream().map(Trend::toJson).collect(Collectors.toList())));
-            }
-         });
-          break;
-        }
-        case "sendTrends": {
-          service.sendTrends(json.getJsonObject("trend") == null ? null : new com.ges.mysocialdashboard.twitter.Trend(json.getJsonObject("trend")));
+          service.getTrends(createHandler(msg));
           break;
         }
 

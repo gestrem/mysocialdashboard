@@ -24,13 +24,9 @@ public class MainVerticle extends AbstractVerticle {
 			e.printStackTrace();
 		}
     	
-    	/*
-    	twitterService = TwitterService.create(vertx);
     	
-		ProxyHelper.registerService(TwitterService.class, vertx, twitterService, ADDRESS);
-		
-		
-*/
+    
+
     	 vertx.deployVerticle(TrendCollector.class.getName(), new DeploymentOptions());
     	 vertx.deployVerticle(RestTrendAPI.class.getName(),new DeploymentOptions());
     	 

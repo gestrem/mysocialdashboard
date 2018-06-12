@@ -5,6 +5,7 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.serviceproxy.ProxyHelper;
 import twitter4j.Trends;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
@@ -19,6 +20,25 @@ public class TrendCollector extends AbstractVerticle {
 	  public void start() throws Exception {
 	    super.start();
 	   
+	    TwitterService service = TwitterService.create(vertx, ready ->{
+	    	if (ready.succeeded()) {
+	    		
+	    		System.out.println("Twitter Service Ready");
+	    		
+	    		
+	    		 //ProxyHelper.registerService(TwitterService.class, vertx, service, ADDRESS);
+	    		 
+	    	}
+	    	
+	    	else {
+	    		
+	    		System.out.println("error "+ready.result());
+	    	}
+	    });
+	    
+		 
+
+		  
 	    // Read the configuration, and deploy a MarketDataVerticle for each company listed in the configuration.
 	
 	    

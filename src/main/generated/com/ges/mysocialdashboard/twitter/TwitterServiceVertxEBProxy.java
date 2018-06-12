@@ -32,10 +32,9 @@ import java.util.function.Function;
 import io.vertx.serviceproxy.ProxyHelper;
 import io.vertx.serviceproxy.ServiceException;
 import io.vertx.serviceproxy.ServiceExceptionMessageCodec;
-import java.util.List;
 import com.ges.mysocialdashboard.twitter.TwitterService;
-import com.ges.mysocialdashboard.twitter.Trend;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
@@ -65,32 +64,21 @@ public class TwitterServiceVertxEBProxy implements TwitterService {
     } catch (IllegalStateException ex) {}
   }
 
-  public void getTrends(Handler<AsyncResult<List<Trend>>> resulthandler) {
+  public void getTrends(Handler<AsyncResult<JsonObject>> resultHandler) {
     if (closed) {
-      resulthandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
       return;
     }
     JsonObject _json = new JsonObject();
     DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "getTrends");
-    _vertx.eventBus().<JsonArray>send(_address, _json, _deliveryOptions, res -> {
+    _vertx.eventBus().<JsonObject>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
-        resulthandler.handle(Future.failedFuture(res.cause()));
+        resultHandler.handle(Future.failedFuture(res.cause()));
       } else {
-        resulthandler.handle(Future.succeededFuture(res.result().body().stream().map(o -> o instanceof Map ? new Trend(new JsonObject((Map) o)) : new Trend((JsonObject) o)).collect(Collectors.toList())));
+        resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
-  }
-
-  public void sendTrends(Trend trend) {
-    if (closed) {
-      throw new IllegalStateException("Proxy is closed");
-    }
-    JsonObject _json = new JsonObject();
-    _json.put("trend", trend == null ? null : trend.toJson());
-    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
-    _deliveryOptions.addHeader("action", "sendTrends");
-    _vertx.eventBus().send(_address, _json, _deliveryOptions);
   }
 
 

@@ -8,6 +8,8 @@ import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 
 @ProxyGen
 public interface TwitterService {
@@ -20,17 +22,20 @@ public interface TwitterService {
 	String EVENT_ADDRESS = "twitter";
 	
 	
-  public void getTrends(Handler<AsyncResult<List<Trend>>> resulthandler);
+  public void getTrends(Handler<AsyncResult<JsonObject>>  resultHandler);
   
-  public void sendTrends(Trend trend);
   
-  public static TwitterService create(Vertx vertx) {
-      return new TwitterAPI(vertx);
+  public static TwitterService create(Vertx vertx,Handler<AsyncResult
+			<TwitterService>> readyHandler) {
+      return new TwitterAPI(vertx,readyHandler);
   }
   
-  public static TwitterService createProxy(Vertx vertx) {
-      return new TwitterServiceVertxEBProxy(vertx, ADDRESS);
-  }
+  static TwitterService createProxy(Vertx vertx, String address) {
+	  
+	   return new TwitterServiceVertxEBProxy(vertx, address);
+	  }
+  
+ 
   
   
 	

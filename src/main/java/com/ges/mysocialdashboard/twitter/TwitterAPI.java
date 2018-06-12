@@ -1,11 +1,14 @@
 package com.ges.mysocialdashboard.twitter;
 
+import static com.ges.mysocialdashboard.twitter.TwitterService.ADDRESS;
+
 import java.util.List;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import twitter4j.Location;
 import twitter4j.ResponseList;
@@ -22,60 +25,38 @@ public class TwitterAPI implements TwitterService {
 	private Twitter twitter = TwitterFactory.getSingleton();
 	private final Vertx vertx;
 	
-	public TwitterAPI(Vertx vertx) {
+	public TwitterAPI(Vertx vertx,Handler<AsyncResult
+			<TwitterService>> readyHandler) {
 	    this.vertx = vertx;
-	   
+	    readyHandler.handle(Future.succeededFuture(this));
 	
 	  }
 
-	public void getTrends(Handler<AsyncResult<List<Trend>>> resulthandler) {
+	public void getTrends(Handler<AsyncResult<JsonObject>> resultHandler) {
 		
-	
-        List<Trend> trends = null;
-        Trend trend = new Trend();
-        
-    
-
-		try {
-			Trends myTrends = twitter.getPlaceTrends(615702);
-
-	    	 
-	        for (int i = 0; i < myTrends.getTrends().length; i++) {
+		vertx.eventBus().<JsonObject>consumer(ADDRESS).handler( message ->{
+			JsonObject trend = message.body();
+			 resultHandler.handle((AsyncResult<JsonObject>) Future.succeededFuture(trend));	
+		});
+		
+		
+		/*
+		   vertx.eventBus().<JsonObject>consumer(ADDRESS)
+	        .handler(message -> {
+	        	JsonObject trend = message.body();
+	        	trends.put(trend.getString("name"), trend);
+	        	  System.out.println("Trend collect ### " + trend.encode());
 	        	
-	        	trend.setName(myTrends.getTrends()[i].getName());
-	        	trend.setUrl(myTrends.getTrends()[i].getURL());
-	        	 System.out.println(trend.toJson());
-	        	trends.add(trend);
-	           
-	        }
-			resulthandler.handle(Future.succeededFuture(trends));
-		} catch (TwitterException e) {
-			// TODO Auto-generated catch block
-		
-			 resulthandler.handle(Future.failedFuture(e.getCause()));
-			 
-			
-		}
-		
+	  
+	        });
+
+		*/
 		// TODO Auto-generated method stub
 		
 	}
 
-	public void sendTrendsToBus(Trend trend) {
-		
-		vertx.eventBus().publish(EVENT_ADDRESS, new JsonObject()
-		        .put("name", trend.getName())
-		        .put("url", trend.getUrl())
-		        .put("date", System.currentTimeMillis())
-		    );
-		
-	}
+	
 
-	@Override
-	public void sendTrends(Trend trend) {
-		// TODO Auto-generated method stub
-		
-	}
 
 
 
